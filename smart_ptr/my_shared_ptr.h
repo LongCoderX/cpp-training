@@ -3,15 +3,10 @@
 namespace my {
 class shared_count {
 public:
-  shared_count() : count_(1) {}
-  void add_count() { ++count_; }
-
-  long reduce_count() {
-    --count_;
-    return count_;
-  }
-
-  long get_count() const { return count_; }
+  shared_count() noexcept : count_(1) {}
+  void add_count() noexcept { ++count_; }
+  long reduce_count() noexcept { return --count_; }
+  long get_count() const noexcept { return count_; }
 
 private:
   long count_;
@@ -19,12 +14,12 @@ private:
 
 template <typename T> class shared_ptr {
   using value_type = T;
-  template <typename U> friend class shared_ptr;
 
 public:
-  shared_ptr() : shared_count_(nullptr){};
-  explicit shared_ptr(value_type *ptr) : ptr_(ptr) {
-    if (ptr_) {
+  template <typename U> friend class shared_ptr;
+
+  explicit shared_ptr(T *ptr = nullptr) : ptr_(ptr) {
+    if (ptr) {
       shared_count_ = new shared_count();
     }
   }
@@ -35,6 +30,7 @@ public:
     }
   }
 
+  // 拷贝构造函数
   shared_ptr(const shared_ptr &other) {
     ptr_ = other.ptr_;
     if (ptr_) {
@@ -43,8 +39,8 @@ public:
     }
   }
 
-  /* 拷贝构造函数*/
-  template <typename U> shared_ptr(const shared_ptr<U> &other) {
+  // 类型转换构造函数
+  template <typename U> shared_ptr(const shared_ptr<U> &other) noexcept {
     ptr_ = other.ptr_;
     if (ptr_) {
       other.shared_count_->add_count();
@@ -52,31 +48,78 @@ public:
     }
   }
 
-  template <typename U> shared_ptr(shared_ptr<U> &&other) {
-    swap(other);
+  // 移动构造函数
+  template <typename U> shared_ptr(shared_ptr<U> &&other) noexcept {
+    ptr_ = other.ptr_;
+    if (ptr_) {
+      shared_count_ = other.shared_count_;
+      other.ptr_ = nullptr;
+    }
   }
 
-  long use_count() const {
+  // 赋值运算符
+  template <typename U> shared_ptr(const shared_ptr<U> &other, T *ptr) noexcept {
+    ptr_ = ptr;
+    if (ptr_) {
+      other.shared_count_->add_count();
+      shared_count_ = other.shared_count_;
+    }
+  }
+
+  // 类型转换赋值运算符
+  shared_ptr &operator=(shared_ptr rhs) noexcept {
+    rhs.swap(*this);
+    return *this;
+  }
+
+  T *get() const noexcept { return ptr_; }
+  long use_count() const noexcept {
     if (ptr_) {
       return shared_count_->get_count();
     } else {
       return 0;
     }
   }
-
-  /* 公共函数 */
-  value_type *get() const { return ptr_; }
-  value_type &operator*() const { return *ptr_; }
-  value_type *operator->() const { return ptr_; }
-  operator bool() const { return ptr_ != nullptr; }
-
-private:
-  void swap(shared_ptr &rhs) {
-    std::swap(ptr_, rhs.ptr_);
-    std::swap(shared_count_, rhs.shared_count_);
+  void swap(shared_ptr &rhs) noexcept {
+    using std::swap;
+    swap(ptr_, rhs.ptr_);
+    swap(shared_count_, rhs.shared_count_);
   }
 
-  value_type *ptr_ = nullptr;            // 指向被管理的资源
-  shared_count *shared_count_ = nullptr; // 引用计数器
-}; // end of class shared_ptr
+  T &operator*() const noexcept { return *ptr_; }
+  T *operator->() const noexcept { return ptr_; }
+  operator bool() const noexcept { return ptr_; }
+
+private:
+  T *ptr_;
+  shared_count *shared_count_;
+};
+
+template <typename T> void swap(shared_ptr<T> &lhs, shared_ptr<T> &rhs) noexcept {
+  lhs.swap(rhs);
+}
+
+template <typename T, typename U>
+shared_ptr<T> static_pointer_cast(const shared_ptr<U> &other) noexcept {
+  T *ptr = static_cast<T *>(other.get());
+  return shared_ptr<T>(other, ptr);
+}
+
+template <typename T, typename U>
+shared_ptr<T> reinterpret_pointer_cast(const shared_ptr<U> &other) noexcept {
+  T *ptr = reinterpret_cast<T *>(other.get());
+  return shared_ptr<T>(other, ptr);
+}
+
+template <typename T, typename U>
+shared_ptr<T> const_pointer_cast(const shared_ptr<U> &other) noexcept {
+  T *ptr = const_cast<T *>(other.get());
+  return shared_ptr<T>(other, ptr);
+}
+
+template <typename T, typename U>
+shared_ptr<T> dynamic_pointer_cast(const shared_ptr<U> &other) noexcept {
+  T *ptr = dynamic_cast<T *>(other.get());
+  return shared_ptr<T>(other, ptr);
+}
 } // namespace my

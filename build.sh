@@ -24,6 +24,14 @@ function clean() {
     if [ -d "build" ]; then
         rm -rf build
     fi
+
+    if [ -d "include" ]; then
+        rm -rf include    
+    fi
+
+    if [ -d "run" ]; then
+        rm -rf run
+    fi
 }
 
 case "$1" in
@@ -37,4 +45,4 @@ case "$1" in
         echo "Usage: $0 {build|clean}"
         exit 1
         ;;
-esac    
+esac

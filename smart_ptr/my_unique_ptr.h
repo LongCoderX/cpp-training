@@ -22,7 +22,7 @@ namespace my {
       }
 
       /* 移动赋值运算符 */
-      unique_ptr& operator=(unique_ptr &&rhs) {
+      unique_ptr& operator=(unique_ptr rhs) {
         rhs.swap(*this);
         return *this;
       }

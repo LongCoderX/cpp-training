@@ -7,7 +7,9 @@ set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR})
-set(CMAKE_EXPORT_COMPILE_COMMANDS=ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+message("CMAKE_EXPORT_COMPILE_COMMANDS: ${CMAKE_EXPORT_COMPILE_COMMANDS}")
 
 project(cpp-demo)
 
@@ -18,6 +20,6 @@ add_subdirectory(smart_ptr)
 add_subdirectory(tests)
 
 # 安装 smart_ptr 库的头文件到 include/smart_ptr 目录
-install(DIRECTORY smart_ptr/
-        DESTINATION include/smart_ptr
-        FILES_MATCHING PATTERN "*.h")
+# install(DIRECTORY smart_ptr/
+#         DESTINATION include/smart_ptr
+#         FILES_MATCHING PATTERN "*.h")
