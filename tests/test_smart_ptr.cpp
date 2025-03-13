@@ -12,7 +12,7 @@ int main() {
     if (uptr1) {
       puts("uptr1 is not empty");
     }
-    printf("use count of uptr2 is now %lf\n", uptr1->radius_);
+    printf("use count of uptr2 is now %lf\n", static_cast<circle*>(uptr2.get())->radius_);
 
 
     /* 测试 shared_ptr 的基本功能 */
